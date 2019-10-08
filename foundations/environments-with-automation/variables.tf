@@ -27,6 +27,29 @@ variable "environments" {
   type        = list(string)
 }
 
+variable "applications" {
+  description = "List of apps"
+  type = list(object({
+    name       = string,
+    admins     = list(string),
+    developers = list(string),
+  viewers = list(string) }))
+  default = [
+    {
+      name       = "my-test-app-1"
+      admins     = ["user:admin@averbukh.dev"]
+      developers = ["user:admin@averbukh.dev"]
+      viewers    = []
+    },
+    {
+      name       = "my-test-app-2"
+      admins     = ["user:averbukh@google.com"]
+      developers = []
+      viewers    = []
+    },
+  ]
+}
+
 variable "generate_service_account_keys" {
   description = "Generate and store service account keys in the state file."
   default     = false

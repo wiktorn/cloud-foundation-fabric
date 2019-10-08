@@ -1,4 +1,3 @@
-Dockerfile
 FROM alpine:3.10
 
 ARG TERRAFORM_VERSION

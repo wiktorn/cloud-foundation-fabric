@@ -15,8 +15,9 @@ steps:
   - --build-arg
   - TERRAFORM_VERSION_SHA256SUM=${_TERRAFORM_VERSION_SHA256SUM}
   - --tag=gcr.io/${PROJECT_ID}/terraform:${_TERRAFORM_VERSION}
+  - --tag=gcr.io/${PROJECT_ID}/terraform:latest
   - .
 - name: 'gcr.io/${PROJECT_ID}/terraform:${_TERRAFORM_VERSION}'
   args: ['version']
 images: ['gcr.io/${PROJECT_ID}/terraform:${_TERRAFORM_VERSION}']
-tags: ['cloud-builders-community']
+tags: ['terraform', '${_TERRAFORM_VERSION}']

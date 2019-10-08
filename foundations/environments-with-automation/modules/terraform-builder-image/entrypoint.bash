@@ -2,6 +2,7 @@
 set -e
 
 active_account=""
+access_token=""
 function get-active-account() {
   active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2> /dev/null)
 }
@@ -34,13 +35,14 @@ executing in a Google cloud builder environment.
 EOF
 }
 
+# TODO (averbuks) check impersonation permissions/command exit code and exit 1 if impersonation failed
 function impersoname-service-account() {
   if [! -z "$_IMPERSONATE_SA" ]; then
-    gcloud auth print-access-token "$_IMPERSONATE_SA"
-    
+    access_token=$(gcloud auth print-access-token "$_IMPERSONATE_SA")
+    export GOOGLE_OAUTH_ACCESS_TOKEN="$access_token"
+    echo "Impersonating SA $_IMPERSONATE_SA"
   fi
 }
-
 
 get-active-account
 if [[ (! -z "$active_account") &&  (! -z "$GCLOUD_SERVICE_KEY") ]]; then

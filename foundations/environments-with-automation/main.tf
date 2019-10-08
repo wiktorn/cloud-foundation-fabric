@@ -13,8 +13,8 @@
 # limitations under the License.
 
 locals {
-  automation_services = ["sourcerepo.googleapis.com", "cloudbuild.googleapis.com"]
-  automation_project_services = contac(var.project_services, local.automation_services)
+  automation_services         = ["sourcerepo.googleapis.com", "cloudbuild.googleapis.com", "containerregistry.googleapis.com"]
+  automation_project_services = concat(var.project_services, local.automation_services)
 }
 
 ###############################################################################
@@ -35,13 +35,13 @@ module "project-automation" {
   activate_apis   = local.automation_project_services
 }
 
-# CloudBuild SA impersonate and source repositories reader permissions
+# CloudBuild SA permissions
 
 module "automation_projects_iam_bindings" {
   source  = "terraform-google-modules/iam/google//modules/projects_iam"
   version = "~> 3.0"
 
-  projects = [module.project-automation.id]
+  project = module.project-automation.project_id
 
   bindings = {
     "roles/source.reader" = [
@@ -51,10 +51,22 @@ module "automation_projects_iam_bindings" {
     "roles/iam.workloadIdentityUser" = [
       "serviceAccount:${module.project-automation.number}@cloudbuild.gserviceaccount.com"
     ]
+
+    "roles/storage/admin" = [
+      "serviceAccount:${module.project-automation.number}@cloudbuild.gserviceaccount.com"
+    ]
   }
 }
 
-# per-environment service accounts
+# Terraform Container Image to be used via CloudBuild
+
+module "terraform_automation_container_image" {
+  source = "./modules/terraform-builder-image"
+
+  project_id = module.project-automation.project_id
+}
+
+# Environments service accounts
 
 module "service-accounts-tf-environments" {
   source             = "terraform-google-modules/service-accounts/google"
@@ -69,7 +81,7 @@ module "service-accounts-tf-environments" {
   generate_keys      = var.generate_service_account_keys
 }
 
-# bootstrap Terraform state GCS bucket
+# Bootstrap Terraform state GCS bucket
 
 module "gcs-tf-bootstrap" {
   source     = "terraform-google-modules/cloud-storage/google"
@@ -80,20 +92,15 @@ module "gcs-tf-bootstrap" {
   location   = var.gcs_location
 }
 
-# per-environment Terraform state GCS buckets
+# Environments Terraform state GCS buckets
 
 module "gcs-tf-environments" {
-  source          = "terraform-google-modules/cloud-storage/google"
-  version         = "1.0.0"
-  project_id      = module.project-automation.project_id
-  prefix          = "${var.prefix}-tf"
-  names           = var.environments
-  location        = var.gcs_location
-  set_admin_roles = true
-  bucket_admins = zipmap(
-    var.environments,
-    module.service-accounts-tf-environments.iam_emails_list
-  )
+  source     = "terraform-google-modules/cloud-storage/google"
+  version    = "1.0.0"
+  project_id = module.project-automation.project_id
+  prefix     = "${var.prefix}-tf"
+  names      = var.environments
+  location   = var.gcs_location
 }
 
 ###############################################################################

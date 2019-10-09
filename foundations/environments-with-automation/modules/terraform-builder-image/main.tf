@@ -21,13 +21,15 @@ resource "null_resource" "build_and_push_tf_image" {
   }
 
   provisioner "local-exec" {
-    command = "cd ${path.module} && gcloud config set project ${var.project_id}; gcloud builds submit . --config cloudbuild.yaml"
+    working_dir = path.module
+    command = "./scripts/build-tf-container.sh ${var.project_id}"
   }
 }
 
 resource "null_resource" "remove_tf_image" {
   provisioner "local-exec" {
     when    = "destroy"
-    command = "gcloud config set project ${var.project_id}; gcloud container images delete terraform --force-delete-tags --quiet"
+    working_dir = path.module
+    command = "./scripts/purge-tf-container.sh ${var.project_id}"
   }
 }

@@ -14,6 +14,6 @@
 
 billing_account_id = "015617-1BWTBC-AFOID9"
 environments       = ["prod", "dev", "test"]
-organization_id    = "organizations/506642144300"
+organization_id    = "506642144300"
 prefix             = "test-1"
 root_node          = "folders/957837273696"

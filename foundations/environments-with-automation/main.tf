@@ -48,10 +48,6 @@ module "automation_projects_iam_bindings" {
       "serviceAccount:${module.project-automation.number}@cloudbuild.gserviceaccount.com"
     ]
 
-    "roles/iam.workloadIdentityUser" = [
-      "serviceAccount:${module.project-automation.number}@cloudbuild.gserviceaccount.com"
-    ]
-
     "roles/storage/admin" = [
       "serviceAccount:${module.project-automation.number}@cloudbuild.gserviceaccount.com"
     ]
@@ -71,6 +67,7 @@ module "terraform_automation_container_image" {
 module "service-accounts-tf-environments" {
   source             = "terraform-google-modules/service-accounts/google"
   version            = "2.0.0"
+
   project_id         = module.project-automation.project_id
   org_id             = var.organization_id
   billing_account_id = var.billing_account_id
@@ -79,6 +76,32 @@ module "service-accounts-tf-environments" {
   grant_billing_role = true
   grant_xpn_roles    = var.grant_xpn_org_roles
   generate_keys      = var.generate_service_account_keys
+}
+
+module "organization-viewer-to-env-sa" {
+  source        = "terraform-google-modules/iam/google//modules/organizations_iam"
+  version       = "3.0.0"
+
+  organizations = [var.organization_id]
+  mode          = "additive"
+
+  bindings = {
+    "roles/resourcemanager.organizationViewer" = [for email in values(module.service-accounts-tf-environments.emails): "serviceAccount:${email}"]
+  }
+}
+
+module "token-creator-to-cloudbuild-sa" {
+  source = "terraform-google-modules/iam/google//modules/service_accounts_iam"
+  version       = "3.0.0"
+
+  service_accounts = values(module.service-accounts-tf-environments.emails)
+  project          = module.project-automation.project_id
+  mode             = "additive"
+  bindings = {
+    "roles/iam.serviceAccountTokenCreator" = [
+      "serviceAccount:${module.project-automation.number}@cloudbuild.gserviceaccount.com",
+    ]
+  }
 }
 
 # Bootstrap Terraform state GCS bucket

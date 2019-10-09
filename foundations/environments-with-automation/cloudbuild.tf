@@ -93,4 +93,3 @@ resource "google_cloudbuild_trigger" "image_build_trigger" {
     "google_sourcerepo_repository.app_repository",
   ]
 }
-

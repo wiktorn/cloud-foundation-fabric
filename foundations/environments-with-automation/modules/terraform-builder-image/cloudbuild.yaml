@@ -18,6 +18,8 @@ substitutions:
 steps:
 - name: 'gcr.io/cloud-builders/wget'
   args: ["https://releases.hashicorp.com/terraform/${_TERRAFORM_VERSION}/terraform_${_TERRAFORM_VERSION}_linux_amd64.zip"]
+- name: 'gcr.io/cloud-builders/wget'
+  args: ["https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64"]
 - name: 'gcr.io/cloud-builders/docker'
   env:
   - 'TERRAFORM_VERSION=${_TERRAFORM_VERSION}'
@@ -33,5 +35,5 @@ steps:
   - .
 - name: 'gcr.io/${PROJECT_ID}/terraform:${_TERRAFORM_VERSION}'
   args: ['version']
-images: ['gcr.io/${PROJECT_ID}/terraform:${_TERRAFORM_VERSION}']
+images: ['gcr.io/${PROJECT_ID}/terraform:${_TERRAFORM_VERSION}', 'gcr.io/${PROJECT_ID}/terraform:latest']
 tags: ['terraform', '${_TERRAFORM_VERSION}']

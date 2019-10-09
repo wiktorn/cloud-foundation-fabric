@@ -52,8 +52,11 @@ EOF
 
 # TODO (averbuks) check impersonation permissions/command exit code and exit 1 if impersonation failed
 function impersoname-service-account() {
-  if [! -z "$_IMPERSONATE_SA" ]; then
-    access_token=$(gcloud auth print-access-token "$_IMPERSONATE_SA")
+  if [ -z "$_IMPERSONATE_SA" ]; then
+    echo "Using application-default credentials"
+  else
+    current_token=$(gcloud auth application-default print-access-token)
+    access_token=$(curl -d '{"scope":["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/iam"],"lifetime":"3600s"}'  -H "Content-Type: application/json" -H "Authorization: Bearer ${current_token}" -X POST "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/$_IMPERSONATE_SA:generateAccessToken" | jq .accessToken)
     export GOOGLE_OAUTH_ACCESS_TOKEN="$access_token"
     echo "Impersonating SA $_IMPERSONATE_SA"
   fi

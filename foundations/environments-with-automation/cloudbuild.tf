@@ -71,6 +71,7 @@ resource "google_cloudbuild_trigger" "image_build_trigger" {
       args = ["validate", "-var-file=$BRANCH_NAME.tfvars"]
       env = ["TF_VAR_environment=$BRANCH_NAME",
         "_IMPERSONATE_SA=${module.service-accounts-tf-environments.emails[each.value["branch"]]}",
+        "TF_VAR_impersonate_sa=$_IMPERSONATE_SA",
       "TF_VAR_folder_id=${module.folders-top-level.ids[each.value["branch"]]}"]
     }
     step {
@@ -78,6 +79,7 @@ resource "google_cloudbuild_trigger" "image_build_trigger" {
       args = ["plan", "-var-file=$BRANCH_NAME.tfvars"]
       env = ["TF_VAR_environment=$BRANCH_NAME",
         "_IMPERSONATE_SA=${module.service-accounts-tf-environments.emails[each.value["branch"]]}",
+        "TF_VAR_impersonate_sa=$_IMPERSONATE_SA",
       "TF_VAR_folder_id=${module.folders-top-level.ids[each.value["branch"]]}"]
     }
     step {
@@ -85,6 +87,7 @@ resource "google_cloudbuild_trigger" "image_build_trigger" {
       args = ["apply", "-var-file=$BRANCH_NAME.tfvars", "-auto-approve"]
       env = ["TF_VAR_environment=$BRANCH_NAME",
         "_IMPERSONATE_SA=${module.service-accounts-tf-environments.emails[each.value["branch"]]}",
+        "TF_VAR_impersonate_sa=$_IMPERSONATE_SA",
       "TF_VAR_folder_id=${module.folders-top-level.ids[each.value["branch"]]}"]
     }
   }

@@ -65,8 +65,8 @@ module "terraform_automation_container_image" {
 # Environments service accounts
 
 module "service-accounts-tf-environments" {
-  source             = "terraform-google-modules/service-accounts/google"
-  version            = "2.0.0"
+  source  = "terraform-google-modules/service-accounts/google"
+  version = "2.0.0"
 
   project_id         = module.project-automation.project_id
   org_id             = var.organization_id
@@ -79,20 +79,20 @@ module "service-accounts-tf-environments" {
 }
 
 module "organization-viewer-to-env-sa" {
-  source        = "terraform-google-modules/iam/google//modules/organizations_iam"
-  version       = "3.0.0"
+  source  = "terraform-google-modules/iam/google//modules/organizations_iam"
+  version = "3.0.0"
 
   organizations = [var.organization_id]
   mode          = "additive"
 
   bindings = {
-    "roles/resourcemanager.organizationViewer" = [for email in values(module.service-accounts-tf-environments.emails): "serviceAccount:${email}"]
+    "roles/resourcemanager.organizationViewer" = [for email in values(module.service-accounts-tf-environments.emails) : "serviceAccount:${email}"]
   }
 }
 
 module "token-creator-to-cloudbuild-sa" {
-  source = "terraform-google-modules/iam/google//modules/service_accounts_iam"
-  version       = "3.0.0"
+  source  = "terraform-google-modules/iam/google//modules/service_accounts_iam"
+  version = "3.0.0"
 
   service_accounts = values(module.service-accounts-tf-environments.emails)
   project          = module.project-automation.project_id

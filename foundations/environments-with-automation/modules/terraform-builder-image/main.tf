@@ -22,14 +22,14 @@ resource "null_resource" "build_and_push_tf_image" {
 
   provisioner "local-exec" {
     working_dir = path.module
-    command = "./scripts/build-tf-container.sh ${var.project_id}"
+    command     = "./scripts/build-tf-container.sh ${var.project_id}"
   }
 }
 
 resource "null_resource" "remove_tf_image" {
   provisioner "local-exec" {
-    when    = "destroy"
+    when        = "destroy"
     working_dir = path.module
-    command = "./scripts/purge-tf-container.sh ${var.project_id}"
+    command     = "./scripts/purge-tf-container.sh ${var.project_id}"
   }
 }

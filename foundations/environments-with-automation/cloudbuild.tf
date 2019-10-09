@@ -17,8 +17,8 @@ locals {
   app_to_admins_mapping     = { for app in var.applications : app["name"] => app["admins"] }
   app_to_developers_mapping = { for app in var.applications : app["name"] => app["developers"] }
   app_to_viewers_mapping    = { for app in var.applications : app["name"] => app["viewers"] }
-  app_to_env_mapping        = setproduct(local.app_names,  var.environments)
-  cloudbuild_triggers       = { for item in local.app_to_env_mapping: "${item[0]}-${item[1]}" => {"repository": item[0], "branch": item[1]} }
+  app_to_env_mapping        = setproduct(local.app_names, var.environments)
+  cloudbuild_triggers       = { for item in local.app_to_env_mapping : "${item[0]}-${item[1]}" => { "repository" : item[0], "branch" : item[1] } }
 }
 
 resource "google_sourcerepo_repository" "app_repository" {
@@ -52,7 +52,7 @@ resource "google_sourcerepo_repository_iam_binding" "app_viewers" {
 }
 
 resource "google_cloudbuild_trigger" "image_build_trigger" {
-  for_each = local.cloudbuild_triggers
+  for_each    = local.cloudbuild_triggers
   description = "Trigger for repository ${each.value["repository"]}, branch ${each.value["branch"]}"
   project     = module.project-automation.project_id
 
@@ -61,7 +61,33 @@ resource "google_cloudbuild_trigger" "image_build_trigger" {
     repo_name   = each.value["repository"]
   }
 
-  filename = "build/cloudbuild.yaml"
+  build {
+    step {
+      name = "gcr.io/$PROJECT_ID/terraform"
+      args = ["init", "-backend-config=bucket=${module.gcs-tf-environments.names[each.value["branch"]]}", "-backend-config=prefix=$REPO_NAME/$BRANCH_NAME"]
+    }
+    step {
+      name = "gcr.io/$PROJECT_ID/terraform"
+      args = ["validate", "-var-file=$BRANCH_NAME.tfvars"]
+      env = ["TF_VAR_environment=$BRANCH_NAME",
+        "_IMPERSONATE_SA=${module.service-accounts-tf-environments.emails[each.value["branch"]]}",
+      "TF_VAR_folder_id=${module.folders-top-level.ids[each.value["branch"]]}"]
+    }
+    step {
+      name = "gcr.io/$PROJECT_ID/terraform"
+      args = ["plan", "-var-file=$BRANCH_NAME.tfvars"]
+      env = ["TF_VAR_environment=$BRANCH_NAME",
+        "_IMPERSONATE_SA=${module.service-accounts-tf-environments.emails[each.value["branch"]]}",
+      "TF_VAR_folder_id=${module.folders-top-level.ids[each.value["branch"]]}"]
+    }
+    step {
+      name = "gcr.io/$PROJECT_ID/terraform"
+      args = ["apply", "-var-file=$BRANCH_NAME.tfvars", "-auto-approve"]
+      env = ["TF_VAR_environment=$BRANCH_NAME",
+        "_IMPERSONATE_SA=${module.service-accounts-tf-environments.emails[each.value["branch"]]}",
+      "TF_VAR_folder_id=${module.folders-top-level.ids[each.value["branch"]]}"]
+    }
+  }
 
   depends_on = [
     "google_sourcerepo_repository.app_repository",

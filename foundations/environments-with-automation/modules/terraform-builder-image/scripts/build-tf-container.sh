@@ -16,5 +16,5 @@
 
 project_id=$1
 
-gcloud config set project ${var.project_id}; 
+gcloud config set project ${project_id}; 
 gcloud builds submit . --config cloudbuild.yaml

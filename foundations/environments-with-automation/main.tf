@@ -75,7 +75,7 @@ module "service-accounts-tf-environments" {
   names              = var.environments
   grant_billing_role = true
   grant_xpn_roles    = var.grant_xpn_org_roles
-  generate_keys      = var.generate_service_account_keys
+  generate_keys      = false
 }
 
 module "organization-viewer-to-env-sa" {
@@ -83,6 +83,7 @@ module "organization-viewer-to-env-sa" {
   version = "3.0.0"
 
   organizations = [var.organization_id]
+  bindings_num = 1
   mode          = "additive"
 
   bindings = {
@@ -94,7 +95,10 @@ module "token-creator-to-cloudbuild-sa" {
   source  = "terraform-google-modules/iam/google//modules/service_accounts_iam"
   version = "3.0.0"
 
+
   service_accounts = values(module.service-accounts-tf-environments.emails)
+  service_accounts_num = length(var.environments)
+  bindings_num = 1
   project          = module.project-automation.project_id
   mode             = "additive"
   bindings = {
@@ -124,6 +128,11 @@ module "gcs-tf-environments" {
   prefix     = "${var.prefix}-tf"
   names      = var.environments
   location   = var.gcs_location
+  set_admin_roles = true
+  bucket_admins = zipmap(
+    var.environments,
+    module.service-accounts-tf-environments.iam_emails_list
+  )
 }
 
 ###############################################################################

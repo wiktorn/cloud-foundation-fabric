@@ -50,11 +50,6 @@ variable "applications" {
   ]
 }
 
-variable "generate_service_account_keys" {
-  description = "Generate and store service account keys in the state file."
-  default     = false
-}
-
 variable "gcs_location" {
   description = "GCS bucket location."
   default     = "EU"

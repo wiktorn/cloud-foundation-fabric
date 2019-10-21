@@ -32,12 +32,6 @@ output "environment_tf_gcs_buckets" {
   value       = module.gcs-tf-environments.names
 }
 
-output "environment_service_account_keys" {
-  description = "Service account keys used to run each environment Terraform modules."
-  sensitive   = true
-  value       = module.service-accounts-tf-environments.keys
-}
-
 output "environment_service_accounts" {
   description = "Service accounts used to run each environment Terraform modules."
   value       = module.service-accounts-tf-environments.emails
@@ -56,6 +50,11 @@ output "audit_logs_project" {
 output "shared_resources_project" {
   description = "Project that holdes resources shared across environments."
   value       = module.project-shared-resources.project_id
+}
+
+output "source_repositories" {
+  description = "Source Repositories for app's infrastructure terraform code."
+  value = {for app in local.app_names: app => google_sourcerepo_repository.app_repository[app].url}
 }
 
 # Add further outputs here for the additional modules that manage shared

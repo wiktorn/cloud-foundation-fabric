@@ -91,7 +91,8 @@ variable "team_folders" {
     group_iam            = map(list(string))
     impersonation_groups = list(string)
   }))
-  default = null
+  default  = {}
+  nullable = false
   # default = {
   #   team-a = {
   #     descriptive_name = "Team A"

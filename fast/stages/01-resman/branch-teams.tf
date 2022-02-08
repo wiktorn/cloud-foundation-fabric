@@ -36,7 +36,7 @@ module "branch-teams-prod-sa" {
 
 module "branch-teams-team-folder" {
   source    = "../../../modules/folder"
-  for_each  = coalesce(var.team_folders, {})
+  for_each  = var.team_folders
   parent    = module.branch-teams-folder.id
   name      = each.value.descriptive_name
   group_iam = each.value.group_iam == null ? {} : each.value.group_iam
@@ -44,7 +44,7 @@ module "branch-teams-team-folder" {
 
 module "branch-teams-team-sa" {
   source      = "../../../modules/iam-service-account"
-  for_each    = coalesce(var.team_folders, {})
+  for_each    = var.team_folders
   project_id  = var.automation_project_id
   name        = "teams-${each.key}-0"
   description = "Terraform team ${each.key} service account."
@@ -60,7 +60,7 @@ module "branch-teams-team-sa" {
 
 module "branch-teams-team-gcs" {
   source     = "../../../modules/gcs"
-  for_each   = coalesce(var.team_folders, {})
+  for_each   = var.team_folders
   project_id = var.automation_project_id
   name       = "teams-${each.key}-0"
   prefix     = local.prefixes.prod
@@ -74,7 +74,7 @@ module "branch-teams-team-gcs" {
 
 module "branch-teams-team-dev-folder" {
   source   = "../../../modules/folder"
-  for_each = coalesce(var.team_folders, {})
+  for_each = var.team_folders
   parent   = module.branch-teams-team-folder[each.key].id
   # naming: environment descriptive name
   name = "${module.branch-teams-team-folder[each.key].name} - Development"
@@ -124,7 +124,7 @@ module "branch-teams-dev-projectfactory-gcs" {
 
 module "branch-teams-team-prod-folder" {
   source   = "../../../modules/folder"
-  for_each = coalesce(var.team_folders, {})
+  for_each = var.team_folders
   parent   = module.branch-teams-team-folder[each.key].id
   # naming: environment descriptive name
   name = "${module.branch-teams-team-folder[each.key].name} - Production"

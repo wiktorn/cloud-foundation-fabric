@@ -11,9 +11,7 @@ This has two important consequences
 - any stage can be swapped out and replaced by different code as long as it respects the contract by providing a predefined set of outputs and optionally accepting a predefined set of variables
 - data flow between stages can be partially automated, reducing the effort and pain required to compile variables by hand
 
-One important assumption is that the flow of data is always forward looking, so no stage should depend on outputs generated further down the chain. This greatly simplifies both the logic and the implementation, and allows stages to be effectively independent.
-
-To achieve this, we rely on specific GCP functionality like [delegated role grants](https://medium.com/google-cloud/managing-gcp-service-usage-through-delegated-role-grants-a843610f2226) that allow controlled delegation of responsibilities, for example to allow managing IAM bindings at the organization level only for specific roles.
+One important assumption is that the flow of data between stages is always forward looking, so no stage should depend on outputs generated further down the chain. This greatly simplifies both the logic and the implementation, and allows stages to be effectively independent. To achieve this we rely on specific GCP functionality like [delegated role grants](https://medium.com/google-cloud/managing-gcp-service-usage-through-delegated-role-grants-a843610f2226), that allows controlled delegation of responsibilities.
 
 Refer to each stage's documentation for a detailed description of its purpose, the architectural choices made in its design, and how it can be configured and wired together to terraform a whole GCP organization. The following is a brief overview of each stage.
 

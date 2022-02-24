@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable "data_force_destroy" {
+  description = "Flag to set 'force_destroy' on data services like BiguQery or Cloud Storage."
+  type        = bool
+  default     = false
+}
 variable "prefix" {
   description = "Unique prefix used for resource names. Not used for project if 'project_create' is null."
   type        = string
@@ -35,6 +40,9 @@ variable "project_services" {
   description = "List of core services enabled on all projects."
   type        = list(string)
   default = [
+    "bigquery.googleapis.com",
+    "bigqueryreservation.googleapis.com",
+    "bigquerystorage.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "compute.googleapis.com",
     "iam.googleapis.com",
@@ -52,6 +60,15 @@ variable "region" {
   default     = "europe-west1"
 }
 
+variable "service_encryption_keys" { # service encription key
+  description = "Cloud KMS to use to encrypt different services. Key location should match service region."
+  type = object({
+    bq      = string
+    storage = string
+    compute = string
+  })
+  default = null
+}
 variable "user_principals" {
   description = "Groups with Service Account Token creator role on service accounts in IAM format, eg 'group:group@domain.com'."
   type        = list(string)

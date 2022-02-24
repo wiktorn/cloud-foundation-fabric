@@ -72,13 +72,29 @@ module "nat" {
 # Cloud GCS bucket
 
 module "gcs-bucket" {
-  source        = "../../../modules/gcs"
-  project_id    = module.project.project_id
-  prefix        = var.prefix
-  name          = "bucket"
-  location      = var.region
-  storage_class = "REGIONAL"
-  force_destroy = true
+  source         = "../../../modules/gcs"
+  project_id     = module.project.project_id
+  prefix         = var.prefix
+  name           = "bucket"
+  location       = var.region
+  storage_class  = "REGIONAL"
+  encryption_key = try(var.service_encryption_keys.storage, null)
+  force_destroy  = var.data_force_destroy
+}
+
+# BigQuery
+
+module "bigquery-dataset" {
+  source     = "../../../modules/bigquery-dataset"
+  project_id = module.project.project_id
+  id         = "dataset"
+  location   = var.region
+  options = {
+    default_table_expiration_ms     = null
+    default_partition_expiration_ms = null
+    delete_contents_on_destroy      = var.data_force_destroy
+  }
+  encryption_key = try(var.service_encryption_keys.bq, null)
 }
 
 # Service Account
@@ -117,4 +133,9 @@ module "vm-test" {
   service_account        = module.service-account-gce.email
   service_account_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   tags                   = ["ssh"]
+  encryption = {
+    encrypt_boot            = can(var.service_encryption_keys.compute) ? true : false
+    disk_encryption_key_raw = null
+    kms_key_self_link       = try(var.service_encryption_keys.compute, null)
+  }
 }

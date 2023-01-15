@@ -130,7 +130,6 @@ EOF
 ```bash
 kubectl create namespace app 
 kubectl label namespace app istio-injection=enabled istio.io/rev- --overwrite
-kubectl annotate --overwrite namespace app mesh.cloud.google.com/proxy='{"managed":"true"}'
 ```
 * Deploy sample app (hello server)
 ```bash

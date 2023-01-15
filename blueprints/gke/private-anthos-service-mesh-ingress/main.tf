@@ -83,7 +83,7 @@ module "project-bastion" {
   services = [
     "iap.googleapis.com" # needed for oslogin to work
   ]
-  oslogin        = false
+  oslogin        = true
   oslogin_admins = var.bastion_owners
 
   shared_vpc_service_config = {

@@ -1,0 +1,53 @@
+elements {
+  gcp {
+
+	group project_host {
+      name "Host project"
+
+      group vpc_host {
+        name "Shared VPC"
+        background_color "#fff3e0"
+        card vpc as gke_subnet {
+          name "GKE subnet"
+        }
+        card vpn as vpn_host
+      }
+    }
+
+    group project_gke {
+      name "GKE service project"
+      card endpoints as endpoint_gke {
+        name "Anthos Ingress endpoint"
+        description "<name>.endpoints.<project_id>.cloud.goog"
+      }
+      card lb as lb_gke {
+      	name "Internal Load Balancer"
+      }
+	  card gke as gke_clusters {
+       name "GKE/Anthos cluster"
+      }
+    }
+
+	group project_bastion {
+    	name "Bastion project"
+    	group vpc_bastion {
+        	name "Bastion VPC"
+            card gce as gce_bastion {
+            	name "Bastion host"
+            }
+			card vpn as vpn_bastion
+            card nat
+        }
+    }
+  }
+}
+
+paths {
+  gke_subnet ..> gke_clusters
+  vpn_bastion <--> vpn_host
+
+  endpoint_gke -down-> lb_gke
+  lb_gke -down-> gke_clusters
+
+  gce_bastion ..> endpoint_gke
+}

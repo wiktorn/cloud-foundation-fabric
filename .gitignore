@@ -49,3 +49,5 @@ blueprints/apigee/hybrid-gke/apiproxy.zip
 blueprints/apigee/hybrid-gke/deploy-apiproxy.sh
 blueprints/apigee/hybrid-gke/ansible/gssh.sh
 blueprints/apigee/hybrid-gke/ansible/vars/vars.yaml
+blueprints/gke/private-anthos-service-mesh-ingress/ssl-secret.yaml
+

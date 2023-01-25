@@ -23,3 +23,4 @@ backend.tf
 
 ansible/vars/vars.yaml
 ansible/gssh.sh
+ansible/roles/config-mgmt/tasks/deploy-secret.yaml

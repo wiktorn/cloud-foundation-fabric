@@ -30,7 +30,7 @@ resource "local_file" "vars_file" {
 
 resource "local_file" "gssh_file" {
   content = templatefile("${path.module}/templates/gssh.sh.tpl", {
-    project_id = var.mgmt_project_id
+    project_id = module.mgmt_project.project_id
     zone       = var.mgmt_server_config.zone
   })
   filename        = "${path.module}/ansible/gssh.sh"

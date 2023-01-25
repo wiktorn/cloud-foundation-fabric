@@ -37,10 +37,14 @@ module "clusters" {
     enable_private_endpoint = true
     master_global_access    = true
   }
+  enable_features = {
+    gateway_api = true
+  }
   release_channel = "REGULAR"
   labels = {
     mesh_id = "proj-${module.fleet_project.number}"
   }
+  tags = ["${each.key}-node"]
 }
 
 module "cluster_nodepools" {
@@ -48,9 +52,15 @@ module "cluster_nodepools" {
   source       = "../../../modules/gke-nodepool"
   project_id   = module.fleet_project.project_id
   cluster_name = module.clusters[each.key].name
+  cluster_id   = module.clusters[each.key].id
   location     = var.region
   name         = "nodepool-${each.key}"
   node_count   = { initial = 1 }
+  node_config = {
+    disk_type    = "pd-ssd"
+    machine_type = "e2-standard-2"
+    spot         = true
+  }
   service_account = {
     create = true
   }
@@ -62,14 +72,27 @@ module "hub" {
   project_id = module.fleet_project.project_id
   clusters   = { for k, v in module.clusters : k => v.id }
   features = {
-    appdevexperience             = false
-    configmanagement             = false
-    identityservice              = false
-    multiclusteringress          = null
+    multiclusteringress          = var.mesh_config.enable_mesh ? keys(var.clusters_config)[0] : null
     servicemesh                  = true
-    multiclusterservicediscovery = false
+    multiclusterservicediscovery = var.mesh_config.enable_mesh
   }
   depends_on = [
     module.fleet_project
   ]
+}
+
+resource "google_project_iam_member" "mcs_network_viewer" {
+  count      = var.mesh_config.enable_mesh ? 1 : 0
+  project    = module.fleet_project.project_id
+  member     = "serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"
+  role       = "roles/compute.networkViewer"
+  depends_on = [module.hub]
+}
+
+resource "google_project_iam_member" "mcs_agent" {
+  count      = var.mesh_config.enable_mesh ? 1 : 0
+  project    = module.host_project.project_id
+  member     = "serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"
+  role       = "roles/compute.networkViewer"
+  depends_on = [module.hub]
 }

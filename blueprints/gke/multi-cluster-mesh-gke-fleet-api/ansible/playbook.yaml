@@ -24,4 +24,5 @@
       become_method: sudo
     - role: install
     - role: test
-    
+    - role: config-mgmt
+

@@ -43,14 +43,21 @@ variable "clusters_config" {
   }
 }
 
-variable "fleet_project_id" {
-  description = "Management Project ID."
-  type        = string
+variable "gateway_static_ip" {
+  description = "IP address of Gateway into GKE. Needs to be a part of one defined subnets (either: subnet-mgmt or in format 'subnet-$${clusters_config.key}'"
+  type = object({
+    subnet = string
+    ip     = string
+  })
+  default = {
+    subnet : "subnet-mgmt"
+    ip : "10.0.0.10"
+  }
 }
 
-variable "host_project_id" {
-  description = "Project ID."
-  type        = string
+variable "gateway_dns" {
+  description = "DNS hostname of Gateway into GKE."
+  default     = "ingress"
 }
 
 
@@ -60,10 +67,26 @@ variable "istio_version" {
   default     = "1.14.1-asm.3"
 }
 
-variable "mgmt_project_id" {
-  description = "Management Project ID."
-  type        = string
+variable "mesh_config" {
+  description = "Anthos Service Mesh related configuration"
+  type = object({
+    enable_mesh                 = optional(bool, false)
+    provision_gateway_resources = optional(bool, false)
+    provision_gateway           = optional(bool, false)
+  })
+  default = {}
+  validation {
+    condition = !(
+      (
+        !var.mesh_config.provision_gateway_resources && var.mesh_config.provision_gateway
+        ) || (
+        !var.mesh_config.enable_mesh && var.mesh_config.provision_gateway_resources && var.mesh_config.provision_gateway
+      )
+    )
+    error_message = "provision_gateway depends on provision_gateway_resources and provision_gateway_resources depends on enable_mesh"
+  }
 }
+
 
 variable "mgmt_server_config" {
   description = "Mgmt server configuration."
@@ -94,6 +117,17 @@ variable "mgmt_subnet_cidr_block" {
 variable "parent" {
   description = "Parent."
   type        = string
+}
+
+variable "prefix" {
+  description = "Prefix for project names"
+  type        = string
+}
+
+variable "proxy_only_cidr" {
+  description = "Private IP address range for proxy-only subnet for Internal Load Balancer (used only when Service Mesh is enabled)"
+  type        = string
+  default     = "10.32.0.0/23"
 }
 
 variable "region" {

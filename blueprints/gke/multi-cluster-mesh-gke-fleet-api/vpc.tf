@@ -34,6 +34,12 @@ module "svpc" {
     name          = "subnet-mgmt"
     region        = var.mgmt_server_config.region
   }])
+  subnets_proxy_only = !var.mesh_config.enable_mesh ? [] : [{
+    name          = "proxy-only"
+    ip_cidr_range = var.proxy_only_cidr
+    region        = var.region
+    active        = true
+  }]
 }
 
 module "firewall" {

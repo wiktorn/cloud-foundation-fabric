@@ -26,20 +26,26 @@ module "host_project" {
   source          = "../../../modules/project"
   billing_account = var.billing_account_id
   parent          = var.parent
-  name            = var.host_project_id
+  prefix          = var.prefix
+  name            = "host"
   shared_vpc_host_config = {
     enabled = true
   }
-  services = [
-    "container.googleapis.com"
-  ]
+  services = concat(
+    ["container.googleapis.com"],
+    var.mesh_config.enable_mesh ? ["dns.googleapis.com"] : [],
+  )
+  iam = {
+    "roles/multiclusterservicediscovery.serviceAgent" = ["serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-discovery}"]
+  }
 }
 
 module "mgmt_project" {
   source          = "../../../modules/project"
   billing_account = var.billing_account_id
   parent          = var.parent
-  name            = var.mgmt_project_id
+  name            = "mgmt"
+  prefix          = var.prefix
   shared_vpc_service_config = {
     attach               = true
     host_project         = module.host_project.project_id
@@ -56,7 +62,8 @@ module "fleet_project" {
   source          = "../../../modules/project"
   billing_account = var.billing_account_id
   parent          = var.parent
-  name            = var.fleet_project_id
+  prefix          = var.prefix
+  name            = "fleet"
   shared_vpc_service_config = {
     attach       = true
     host_project = module.host_project.project_id
@@ -69,7 +76,7 @@ module "fleet_project" {
       ]
     }
   }
-  services = [
+  services = concat([
     "anthos.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "container.googleapis.com",
@@ -79,9 +86,17 @@ module "fleet_project" {
     "mesh.googleapis.com",
     "monitoring.googleapis.com",
     "stackdriver.googleapis.com"
-  ]
+    ], !var.mesh_config.enable_mesh ? [] : [
+    "multiclusterservicediscovery.googleapis.com",
+    "multiclusteringress.googleapis.com",
+    "trafficdirector.googleapis.com"
+    ] # enable API's per https://cloud.google.com/kubernetes-engine/docs/how-to/enabling-multi-cluster-gateways#before_you_begin
+  )
   iam = {
-    "roles/container.admin"                     = [module.mgmt_server.service_account_iam_email]
+    "roles/container.admin" = [
+      module.mgmt_server.service_account_iam_email,
+      "serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-ingress}"
+    ]
     "roles/gkehub.admin"                        = [module.mgmt_server.service_account_iam_email]
     "roles/gkehub.serviceAgent"                 = ["serviceAccount:${module.fleet_project.service_accounts.robots.fleet}"]
     "roles/monitoring.viewer"                   = local.np_service_account_iam_email

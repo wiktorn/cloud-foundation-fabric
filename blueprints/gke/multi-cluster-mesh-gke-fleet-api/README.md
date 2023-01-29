@@ -75,3 +75,8 @@ Once done testing, you can clean up resources by running `terraform destroy`.
 | [region](variables.tf#L99) | Region. | <code>string</code> |  | <code>&#34;europe-west1&#34;</code> |
 
 <!-- END TFDOC -->
+
+# Further reading
+* https://cloud.google.com/kubernetes-engine/docs/how-to/enabling-multi-cluster-gateways
+* https://cloud.google.com/kubernetes-engine/docs/how-to/deploying-gateways#istio-gateways
+* https://cloud.google.com/kubernetes-engine/docs/how-to/msc-setup-with-shared-vpc-networks#vpc_setup_diff_svc_projects

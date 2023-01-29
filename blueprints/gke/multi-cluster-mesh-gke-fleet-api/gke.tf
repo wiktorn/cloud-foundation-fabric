@@ -80,19 +80,20 @@ module "hub" {
     module.fleet_project
   ]
 }
-
-resource "google_project_iam_member" "mcs_network_viewer" {
-  count      = var.mesh_config.enable_mesh ? 1 : 0
-  project    = module.fleet_project.project_id
-  member     = "serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"
-  role       = "roles/compute.networkViewer"
-  depends_on = [module.hub]
-}
-
+# moved to fleet_project module
+#resource "google_project_iam_member" "mcs_network_viewer" {
+#  count      = var.mesh_config.enable_mesh ? 1 : 0
+#  project    = module.fleet_project.project_id
+#  member     = "serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"
+#  role       = "roles/compute.networkViewer"
+#  depends_on = [module.hub]
+#}
+/*
+ * moved to host_project module
 resource "google_project_iam_member" "mcs_agent" {
   count      = var.mesh_config.enable_mesh ? 1 : 0
   project    = module.host_project.project_id
   member     = "serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"
-  role       = "roles/compute.networkViewer"
+  role       = "roles/multiclusterservicediscovery.serviceAgent"
   depends_on = [module.hub]
-}
+}*/

@@ -36,7 +36,14 @@ module "host_project" {
     var.mesh_config.enable_mesh ? ["dns.googleapis.com"] : [],
   )
   iam = {
-    "roles/multiclusterservicediscovery.serviceAgent" = ["serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-discovery}"]
+    "roles/multiclusterservicediscovery.serviceAgent" = concat([
+      "serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-discovery}",
+      ], !var.mesh_config.enable_mesh ? [] : [
+      "serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"
+      ]
+    ),
+    "roles/container.serviceAgent"           = ["serviceAccount:${module.fleet_project.service_accounts.robots.container-engine}"]     # from b/221320725#comment18
+    "roles/multiclusteringress.serviceAgent" = ["serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-ingress}"] # from b/221320725#comment18
   }
 }
 
@@ -97,12 +104,21 @@ module "fleet_project" {
       module.mgmt_server.service_account_iam_email,
       "serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-ingress}"
     ]
+    "roles/container.serviceAgent" = ["serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-ingress}"] # inspired by b/221320725#comment18
     "roles/gkehub.admin"                        = [module.mgmt_server.service_account_iam_email]
     "roles/gkehub.serviceAgent"                 = ["serviceAccount:${module.fleet_project.service_accounts.robots.fleet}"]
     "roles/monitoring.viewer"                   = local.np_service_account_iam_email
     "roles/monitoring.metricWriter"             = local.np_service_account_iam_email
     "roles/logging.logWriter"                   = local.np_service_account_iam_email
     "roles/stackdriver.resourceMetadata.writer" = local.np_service_account_iam_email
+    "roles/autoscaling.metricsWriter"           = local.np_service_account_iam_email
+    "roles/compute.networkViewer" = !var.mesh_config.enable_mesh ? [] : concat(
+      # local.np_service_account_iam_email, # undocumented requirement for Gateways? doesn't look like
+      ["serviceAccount:${module.fleet_project.project_id}.svc.id.goog[gke-mcs/gke-mcs-importer]"],
+      # ["serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-discovery}"], # another undocummented?
+      ["serviceAccount:${module.fleet_project.service_accounts.robots.multicluster-ingress}"], # inspired by b/221320725#comment18
+      ["serviceAccount:${module.fleet_project.service_accounts.robots.container-engine}"],     # inspired by b/221320725#comment18 , need otherwise errors on Compue Engine API
+    )
   }
   service_config = {
     disable_on_destroy         = false

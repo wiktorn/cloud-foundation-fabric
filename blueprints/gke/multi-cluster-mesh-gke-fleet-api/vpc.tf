@@ -66,6 +66,30 @@ module "firewall" {
           { protocol = "sctp" }
         ]
       }
+      gateway-healthcheck = { # from b/221320725#comment18
+        description   = "Allow gateway healthcheck"
+        source_ranges = ["health-checkers"]
+        rules         = [{ protocol = "tcp" }]
+      }
+      gateway-rilb = { # from b/221320725#comment18
+        description   = "Allow traffic from ILB"
+        source_ranges = ["${var.gateway_static_ip.ip}/32"]
+        rules         = [{ protocol = "tcp" }]
+      }
+      log-deny = {
+        description          = "Deny-log all"
+        source_ranges        = ["0.0.0.0/0"]
+        enable_logging       = { include_metadata = true }
+        use_service_accounts = false
+        priority             = 65534
+        deny                 = true
+        rules = [
+          {
+            ports    = []
+            protocol = "all"
+          }
+        ]
+      }
     },
     {
       for k, v in var.clusters_config : "allow-${k}-istio" => {

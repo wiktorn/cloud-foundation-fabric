@@ -26,6 +26,7 @@ resource "google_compute_address" "ingress_static_ip" {
   name         = "static-ingress-ip"
   subnetwork   = module.svpc.subnets["${var.region}/${var.gateway_static_ip.subnet}"].id
   address_type = "INTERNAL"
+  purpose      = "SHARED_LOADBALANCER_VIP"
   address      = var.gateway_static_ip.ip
   region       = var.region
 }

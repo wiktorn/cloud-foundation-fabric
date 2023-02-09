@@ -64,6 +64,13 @@ variable "iam" {
   type        = map(list(string))
   default     = {}
   nullable    = false
+  validation {
+    error_message = <<EOT
+      You are trying to shoot yourself in the foot. Setting authorative roles serviceAgent roles may
+      remove those from Google Managed service accounts if not explicitly granted
+      EOT
+    condition     = !anytrue([for k, v in var.iam : can(regexp("^roles/.*serviceAgent$", k))])
+  }
 }
 
 variable "iam_additive" {

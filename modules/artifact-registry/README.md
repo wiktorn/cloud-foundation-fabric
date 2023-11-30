@@ -109,7 +109,7 @@ module "registry-maven" {
 module "registry-docker" {
   source                 = "./fabric/modules/artifact-registry"
   project_id             = var.project_id
-  location               = "europe-west1"
+  location               = var.region
   name                   = "docker-cleanup-policies"
   format                 = { docker = {} }
   cleanup_policy_dry_run = false
@@ -133,7 +133,7 @@ module "registry-docker" {
 }
 
 
-# tftest modules=1 resources=1 inventory=cleanup-policies.yaml
+# tftest modules=1 resources=1 inventory=cleanup-policies.yaml e2e
 ```
 <!-- BEGIN TFDOC -->
 ## Variables

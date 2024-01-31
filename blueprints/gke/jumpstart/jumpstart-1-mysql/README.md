@@ -1,4 +1,8 @@
-TODO:
+Open tutorial in Cloud Shell
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/wiktorn/cloud-foundation-fabric.git&cloudshell_tutorial=blueprints/gke/jumpstart/jumpstart-1-mysql/TUTORIAL.md)
+
+TODO (to be reviewed):
 - use static IP address if provided
 - MySQL password as variable or automatically generated?
      - provide either Secret Manager or generate password and give output

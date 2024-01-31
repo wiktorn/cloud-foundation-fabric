@@ -12,8 +12,6 @@ TODO:
 - permanent IP address for LoadBalancer / DNS name?
   - not needed?
 
-- should the Job that did the setup be removed in the end?
-
 Other reading:
 * https://dev.mysql.com/doc/mysql-operator/en/mysql-operator-introduction.html
 
@@ -53,16 +51,14 @@ Database admin password is stored either as a Kubernetes Secret or accessed from
 
 ## Examples
 ### Default MySQL cluster on GKE with Docker Hub connectivity using Fleet Connection endpoint
-```hcl
+```tfvars
 credentials_config = {
   fleet_host = "https://connectgateway.googleapis.com/v1/projects/.../locations/global/gkeMemberships/..."  # provided by ../jumpstart-0-infra blueprint
 }
-
-# tftest skip
 ```
 
 ### Customized MySQL cluster using Remote Repository and Fleet Connection endpoint
-```hcl
+```tfvars
 credentials_config = {
   fleet_host = "https://connectgateway.googleapis.com/v1/projects/.../locations/global/gkeMemberships/..."  # provided by ../jumpstart-0-infra blueprint
 }
@@ -78,31 +74,27 @@ mysql_config = {
   router_memory    = "1Gi"
   version          = "8.0.30"
 }
-
-# tftest skip
 ```
 
 ### Default cluster using provided static IP address
 
-```hcl
+```tfvars
 credentials_config = {
   fleet_host = "https://connectgateway.googleapis.com/v1/projects/.../locations/global/gkeMemberships/..."  # provided by ../jumpstart-0-infra blueprint
 }
 mysql_config = {
   ip_address = "10.0.0.2"
 }
-# tftest skip
 ```
 
 
 
 ### Default cluster using passwords stored in Secret Manager
 
-```hcl
+```tfvars
 credentials_config = {
   fleet_host = "https://connectgateway.googleapis.com/v1/projects/.../locations/global/gkeMemberships/..."  # provided by ../jumpstart-0-infra blueprint
 }
 
-# tftest skip
 ```
 

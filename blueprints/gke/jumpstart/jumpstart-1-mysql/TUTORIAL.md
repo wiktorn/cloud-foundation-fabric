@@ -14,7 +14,7 @@ Click the **Start** button to move to the next step.
 
 ## Prepare the infrastructure
 ```sh
-touch cloudshell_open/cloud-foundation-fabric/blueprints/gke/jumpstart/jumpstart-0-infra/terraform.tfvars
+touch blueprints/gke/jumpstart/jumpstart-0-infra/terraform.tfvars
 ```
 
 Open <walkthrough-editor-open-file filePath="cloudshell_open/cloud-foundation-fabric/blueprints/gke/jumpstart/jumpstart-0-infra/terraform.tfvars">../jumpstart-0-infra/terraform.tfvars</walkthrough-editor-open-file> file and provide your project details:
@@ -25,10 +25,6 @@ Open <walkthrough-editor-open-file filePath="cloudshell_open/cloud-foundation-fa
 project_id     = "<walkthrough-project-id/>"
 cluster_name   = "cluster-00"
 cluster_create = {}
-project_create = {
-    billing_account = "XXXX"
-    parent          = "ZZZZ" # TODO: use <walkthrough-project-setup billing="true"></walkthrough-project-setup> to select / create a project
-}
 vpc_create = {
     enable_cloud_nat = true
 }

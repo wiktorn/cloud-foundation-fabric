@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redis-cluster-start
+  namespace: ${namespace}
+spec:
+  suspend: false
+  completions: 1
+  template:
+    spec:
+      restartPolicy: Never
+      volumes:
+      - name: shared-data
+        emptyDir: {}
+
+      initContainers:
+        # we resolve node names in an init container using alpine
+        # because the redis image doesn't include nslookup
+      - name: resolve-node-names
+        image: alpine
+        volumeMounts:
+        - name: shared-data
+          mountPath: /tmp/shared-data
+        command:
+        - /bin/sh
+        - -c
+        - |
+          %{~ for n in nodes ~}
+          echo "$(nslookup ${n} | awk '/^Address: / { print $2 }'):6379" >> /tmp/shared-data/nodes
+          %{~ endfor ~}
+
+      containers:
+      - name: redis-cluster-start
+        image: ${image}
+        volumeMounts:
+        - name: shared-data
+          mountPath: /tmp/shared-data
+        command:
+        - /bin/sh
+        - -c
+        - |
+          redis-cli --cluster-yes --cluster-replicas 1 --cluster create $(cat /tmp/shared-data/nodes)
